@@ -1,8 +1,4 @@
-module Rationalizer exposing
-    ( Ingred(..)
-    , IngredListMessage(..)
-    , IngredListState(..)
-    )
+module Rationalizer exposing (..)
 
 import Array exposing (length, slice, toList)
 import Browser
@@ -152,9 +148,6 @@ ingredView (IngredListState { ingredList, newIngred, ingredValid }) =
         , ul [] (List.map ingredItem ingredList)
         , ingredForm newIngred ingredValid
         ]
-
-
-scalingView : IngredListState
 
 
 ingredUpdate : IngredListMessage -> IngredListState -> ( IngredListState, Cmd IngredListMessage )
