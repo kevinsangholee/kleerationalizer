@@ -1,9 +1,9 @@
 module Rationalizer exposing (..)
 
-import Array exposing (length, slice, toList)
+import Array exposing (append, length, push, slice, toList)
 import Browser
-import Html exposing (Html, button, div, h1, input, li, ol, p, text, ul)
-import Html.Attributes exposing (class, disabled, style, value)
+import Html exposing (Html, button, div, h1, input, label, li, p, text, ul)
+import Html.Attributes exposing (class, disabled, for, id, name, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import List exposing (foldr, head, intersperse, length)
 
@@ -16,49 +16,72 @@ type Ingred
         }
 
 
-type IngredListState
-    = IngredListState
+type WebState
+    = WebState
         { ingredList : List Ingred
         , newIngred : String
         , ingredValid : Bool
         }
 
 
-type IngredListMessage
+type WebMessage
     = AddedIngred Ingred
     | FinishedIngred Ingred
     | UpdatedNewIngred String
+    | MoveUpIngred Ingred
+    | MoveDownIngred Ingred
 
 
-main : Program () IngredListState IngredListMessage
+main : Program () WebState WebMessage
 main =
     Browser.element
         { init = ingredInit
-        , update = ingredUpdate
-        , view = ingredView
+        , update = webUpdate
+        , view = mainView
         , subscriptions = ingredSubscriptions
         }
 
 
-ingredInit : () -> ( IngredListState, Cmd IngredListMessage )
+ingredInit : () -> ( WebState, Cmd WebMessage )
 ingredInit _ =
     let
         st =
-            IngredListState { ingredList = [], newIngred = "", ingredValid = False }
+            WebState { ingredList = [], newIngred = "", ingredValid = False }
     in
     ( st, Cmd.none )
 
 
-ingredSubscriptions : IngredListState -> Sub IngredListMessage
+ingredSubscriptions : WebState -> Sub WebMessage
 ingredSubscriptions _ =
     Sub.none
 
 
-ingredItem : Ingred -> Html IngredListMessage
-ingredItem ingred =
-    case ingred of
-        Ingred ingredient ->
-            li [] [ text (ingredToString (Ingred ingredient)), button [ onClick (FinishedIngred (Ingred ingredient)) ] [ text "-" ] ]
+ingredItem : Ingred -> List Ingred -> Html WebMessage
+ingredItem ingred lst =
+    let
+        ( moveUpValid, moveDownValid ) =
+            ( findIngredIndex ingred lst 0 /= 0, findIngredIndex ingred lst 0 /= List.length lst - 1 )
+
+        moveUpAttr =
+            if moveUpValid then
+                "visible"
+
+            else
+                "hidden"
+
+        moveDownAttr =
+            if moveDownValid then
+                "visible"
+
+            else
+                "hidden"
+    in
+    li [ style "width" "100%", style "padding-bottom" "12px" ]
+        [ p [ style "width" "40%", style "display" "inline-block", style "margin-left" "48px" ] [ text (ingredToString ingred) ]
+        , button [ onClick (FinishedIngred ingred), style "margin-left" "24px", style "margin-right" "24px" ] [ text "-" ]
+        , button [ onClick (MoveDownIngred ingred), style "margin-right" "24px", style "visibility" moveDownAttr ] [ text "v" ]
+        , button [ onClick (MoveUpIngred ingred), style "visibility" moveUpAttr ] [ text "^" ]
+        ]
 
 
 
@@ -120,7 +143,7 @@ ingredToString ing =
                     String.fromFloat ingred.ingredQuantity ++ " " ++ ingred.ingredMeasurement ++ " " ++ name
 
 
-ingredForm : String -> Bool -> Html IngredListMessage
+ingredForm : String -> Bool -> Html WebMessage
 ingredForm ingredText ingredValid =
     let
         changeIngred newString =
@@ -140,23 +163,47 @@ ingredForm ingredText ingredValid =
         ]
 
 
-ingredView : IngredListState -> Html IngredListMessage
-ingredView (IngredListState { ingredList, newIngred, ingredValid }) =
+mainView : WebState -> Html WebMessage
+mainView state =
     div [ class "container" ]
-        [ h1 [] [ text "Rationalize Your Recipes!" ]
-        , p [ class "instructions" ] [ text "Enter ingredients below of the form '2 tbsp sugar' or '3 eggs'" ]
-        , ul [] (List.map ingredItem ingredList)
-        , ingredForm newIngred ingredValid
+        [ ingredView state
+        , setScaleView state
         ]
 
 
-ingredUpdate : IngredListMessage -> IngredListState -> ( IngredListState, Cmd IngredListMessage )
-ingredUpdate msg (IngredListState { ingredList, newIngred, ingredValid }) =
+ingredView : WebState -> Html WebMessage
+ingredView (WebState { ingredList, newIngred, ingredValid }) =
+    div [ class "ingredView" ]
+        [ h1 [] [ text "Rationalize Your Recipes!" ]
+        , p [ class "instructions" ] [ text "Enter ingredients below of the form '2 tbsp sugar' or '3 eggs'" ]
+        , ingredForm newIngred ingredValid
+        , div [ class "ingredListView", style "width" "100%" ]
+            [ ul [ style "display" "block", style "margin-left" "auto", style "margin-right" "auto", style "width" "50%" ]
+                (List.foldr (\x acc -> ingredItem x ingredList :: acc) [] ingredList)
+            ]
+        ]
+
+
+setScaleView : WebState -> Html WebMessage
+setScaleView (WebState _) =
+    div [ class "setScaleView", style "display" "inline" ]
+        [ p [] [ text "Set scale for rationalization: " ]
+        , input [ type_ "radio", id "mult", name "scaleType", value "mult" ] []
+        , label [ for "mult" ] [ text "*" ]
+        , input [ type_ "radio", id "div", name "scaleType", value "div" ] []
+        , label [ style "margin-left" "30px", for "div" ] [ text "/" ]
+        , input [ style "margin-left" "50px", style "margin-right" "50px", style "width" "100px" ] []
+        , button [] [ text "RATIONALIZE!" ]
+        ]
+
+
+webUpdate : WebMessage -> WebState -> ( WebState, Cmd WebMessage )
+webUpdate msg (WebState { ingredList, newIngred, ingredValid }) =
     case msg of
         AddedIngred newIngred_ ->
             let
                 st =
-                    IngredListState
+                    WebState
                         { ingredList = newIngred_ :: ingredList
                         , newIngred = ""
                         , ingredValid = False
@@ -167,7 +214,7 @@ ingredUpdate msg (IngredListState { ingredList, newIngred, ingredValid }) =
         FinishedIngred doneIngred ->
             let
                 st =
-                    IngredListState
+                    WebState
                         { ingredList = List.filter (ingredsNotEqual doneIngred) ingredList
                         , newIngred = newIngred
                         , ingredValid = ingredValid
@@ -176,9 +223,57 @@ ingredUpdate msg (IngredListState { ingredList, newIngred, ingredValid }) =
             ( st, Cmd.none )
 
         UpdatedNewIngred raw ->
-            ( IngredListState { ingredList = ingredList, newIngred = raw, ingredValid = isValidIngred raw }, Cmd.none )
+            ( WebState { ingredList = ingredList, newIngred = raw, ingredValid = isValidIngred raw }, Cmd.none )
+
+        MoveUpIngred ingredToMove ->
+            ( WebState { ingredList = moveIngredUp ingredToMove ingredList, newIngred = newIngred, ingredValid = ingredValid }
+            , Cmd.none
+            )
+
+        MoveDownIngred ingredToMove ->
+            ( WebState { ingredList = moveIngredDown ingredToMove ingredList, newIngred = newIngred, ingredValid = ingredValid }
+            , Cmd.none
+            )
 
 
 ingredsNotEqual : Ingred -> Ingred -> Bool
 ingredsNotEqual (Ingred t1) (Ingred t2) =
-    t1.ingredName /= t2.ingredName || t1.ingredMeasurement /= t2.ingredMeasurement
+    t1.ingredName /= t2.ingredName || t1.ingredMeasurement /= t2.ingredMeasurement || t1.ingredQuantity /= t2.ingredQuantity
+
+
+findIngredIndex : Ingred -> List Ingred -> Int -> Int
+findIngredIndex ingredToFind lst idx =
+    case lst of
+        [] ->
+            -1
+
+        x :: xs ->
+            if ingredsNotEqual ingredToFind x then
+                findIngredIndex ingredToFind xs (idx + 1)
+
+            else
+                idx
+
+
+moveIngredDown : Ingred -> List Ingred -> List Ingred
+moveIngredDown ingredToMove lst =
+    let
+        idx =
+            findIngredIndex ingredToMove lst 0
+
+        arr =
+            Array.fromList lst
+    in
+    toList (append (push ingredToMove (append (slice 0 idx arr) (slice (idx + 1) (idx + 2) arr))) (slice (idx + 2) (Array.length arr) arr))
+
+
+moveIngredUp : Ingred -> List Ingred -> List Ingred
+moveIngredUp ingredToMove lst =
+    let
+        idx =
+            findIngredIndex ingredToMove lst 0
+
+        arr =
+            Array.fromList lst
+    in
+    toList (append (append (push ingredToMove (slice 0 (idx - 1) arr)) (slice (idx - 1) idx arr)) (slice (idx + 1) (Array.length arr) arr))

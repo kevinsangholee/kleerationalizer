@@ -5181,13 +5181,13 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Rationalizer$IngredListState = function (a) {
-	return {$: 'IngredListState', a: a};
+var $author$project$Rationalizer$WebState = function (a) {
+	return {$: 'WebState', a: a};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Rationalizer$ingredInit = function (_v0) {
-	var st = $author$project$Rationalizer$IngredListState(
+	var st = $author$project$Rationalizer$WebState(
 		{ingredList: _List_Nil, ingredValid: false, newIngred: ''});
 	return _Utils_Tuple2(st, $elm$core$Platform$Cmd$none);
 };
@@ -5196,92 +5196,6 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Rationalizer$ingredSubscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $author$project$Rationalizer$ingredsNotEqual = F2(
-	function (_v0, _v1) {
-		var t1 = _v0.a;
-		var t2 = _v1.a;
-		return (!_Utils_eq(t1.ingredName, t2.ingredName)) || (!_Utils_eq(t1.ingredMeasurement, t2.ingredMeasurement));
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$String$toFloat = _String_toFloat;
-var $author$project$Rationalizer$isValidIngred = function (raw) {
-	var lst = A2($elm$core$String$split, ' ', raw);
-	if ($elm$core$List$length(lst) < 2) {
-		return false;
-	} else {
-		var _v0 = $elm$core$List$head(lst);
-		if (_v0.$ === 'Nothing') {
-			return false;
-		} else {
-			var num = _v0.a;
-			var _v1 = $elm$core$String$toFloat(num);
-			if (_v1.$ === 'Nothing') {
-				return false;
-			} else {
-				return true;
-			}
-		}
-	}
-};
-var $author$project$Rationalizer$ingredUpdate = F2(
-	function (msg, _v0) {
-		var ingredList = _v0.a.ingredList;
-		var newIngred = _v0.a.newIngred;
-		var ingredValid = _v0.a.ingredValid;
-		switch (msg.$) {
-			case 'AddedIngred':
-				var newIngred_ = msg.a;
-				var st = $author$project$Rationalizer$IngredListState(
-					{
-						ingredList: A2($elm$core$List$cons, newIngred_, ingredList),
-						ingredValid: false,
-						newIngred: ''
-					});
-				return _Utils_Tuple2(st, $elm$core$Platform$Cmd$none);
-			case 'FinishedIngred':
-				var doneIngred = msg.a;
-				var st = $author$project$Rationalizer$IngredListState(
-					{
-						ingredList: A2(
-							$elm$core$List$filter,
-							$author$project$Rationalizer$ingredsNotEqual(doneIngred),
-							ingredList),
-						ingredValid: ingredValid,
-						newIngred: newIngred
-					});
-				return _Utils_Tuple2(st, $elm$core$Platform$Cmd$none);
-			default:
-				var raw = msg.a;
-				return _Utils_Tuple2(
-					$author$project$Rationalizer$IngredListState(
-						{
-							ingredList: ingredList,
-							ingredValid: $author$project$Rationalizer$isValidIngred(raw),
-							newIngred: raw
-						}),
-					$elm$core$Platform$Cmd$none);
-		}
-	});
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5688,6 +5602,7 @@ var $elm$core$Array$slice = F3(
 			correctFrom,
 			A2($elm$core$Array$sliceRight, correctTo, array));
 	});
+var $elm$core$String$toFloat = _String_toFloat;
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5784,6 +5699,45 @@ var $author$project$Rationalizer$ingredForm = F2(
 var $author$project$Rationalizer$FinishedIngred = function (a) {
 	return {$: 'FinishedIngred', a: a};
 };
+var $author$project$Rationalizer$MoveDownIngred = function (a) {
+	return {$: 'MoveDownIngred', a: a};
+};
+var $author$project$Rationalizer$MoveUpIngred = function (a) {
+	return {$: 'MoveUpIngred', a: a};
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$Rationalizer$ingredsNotEqual = F2(
+	function (_v0, _v1) {
+		var t1 = _v0.a;
+		var t2 = _v1.a;
+		return (!_Utils_eq(t1.ingredName, t2.ingredName)) || ((!_Utils_eq(t1.ingredMeasurement, t2.ingredMeasurement)) || (!_Utils_eq(t1.ingredQuantity, t2.ingredQuantity)));
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$Rationalizer$findIngredIndex = F3(
+	function (ingredToFind, lst, idx) {
+		findIngredIndex:
+		while (true) {
+			if (!lst.b) {
+				return -1;
+			} else {
+				var x = lst.a;
+				var xs = lst.b;
+				if (A2($author$project$Rationalizer$ingredsNotEqual, ingredToFind, x)) {
+					var $temp$ingredToFind = ingredToFind,
+						$temp$lst = xs,
+						$temp$idx = idx + 1;
+					ingredToFind = $temp$ingredToFind;
+					lst = $temp$lst;
+					idx = $temp$idx;
+					continue findIngredIndex;
+				} else {
+					return idx;
+				}
+			}
+		}
+	});
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $author$project$Rationalizer$ingredToString = function (ing) {
 	var ingred = ing.a;
@@ -5796,30 +5750,79 @@ var $author$project$Rationalizer$ingredToString = function (ing) {
 	}
 };
 var $elm$html$Html$li = _VirtualDom_node('li');
-var $author$project$Rationalizer$ingredItem = function (ingred) {
-	var ingredient = ingred.a;
-	return A2(
-		$elm$html$Html$li,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				$author$project$Rationalizer$ingredToString(
-					$author$project$Rationalizer$Ingred(ingredient))),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick(
-						$author$project$Rationalizer$FinishedIngred(
-							$author$project$Rationalizer$Ingred(ingredient)))
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Remove')
-					]))
-			]));
-};
+var $author$project$Rationalizer$ingredItem = F2(
+	function (ingred, lst) {
+		var _v0 = _Utils_Tuple2(
+			!(!A3($author$project$Rationalizer$findIngredIndex, ingred, lst, 0)),
+			!_Utils_eq(
+				A3($author$project$Rationalizer$findIngredIndex, ingred, lst, 0),
+				$elm$core$List$length(lst) - 1));
+		var moveUpValid = _v0.a;
+		var moveDownValid = _v0.b;
+		var moveDownAttr = moveDownValid ? 'visible' : 'hidden';
+		var moveUpAttr = moveUpValid ? 'visible' : 'hidden';
+		return A2(
+			$elm$html$Html$li,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'width', '100%'),
+					A2($elm$html$Html$Attributes$style, 'padding-bottom', '12px')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'width', '40%'),
+							A2($elm$html$Html$Attributes$style, 'display', 'inline-block'),
+							A2($elm$html$Html$Attributes$style, 'margin-left', '48px')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$author$project$Rationalizer$ingredToString(ingred))
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							$author$project$Rationalizer$FinishedIngred(ingred)),
+							A2($elm$html$Html$Attributes$style, 'margin-left', '24px'),
+							A2($elm$html$Html$Attributes$style, 'margin-right', '24px')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('-')
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							$author$project$Rationalizer$MoveDownIngred(ingred)),
+							A2($elm$html$Html$Attributes$style, 'margin-right', '24px'),
+							A2($elm$html$Html$Attributes$style, 'visibility', moveDownAttr)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('v')
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							$author$project$Rationalizer$MoveUpIngred(ingred)),
+							A2($elm$html$Html$Attributes$style, 'visibility', moveUpAttr)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('^')
+						]))
+				]));
+	});
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Rationalizer$ingredView = function (_v0) {
 	var ingredList = _v0.a.ingredList;
@@ -5829,7 +5832,7 @@ var $author$project$Rationalizer$ingredView = function (_v0) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('container')
+				$elm$html$Html$Attributes$class('ingredView')
 			]),
 		_List_fromArray(
 			[
@@ -5850,14 +5853,431 @@ var $author$project$Rationalizer$ingredView = function (_v0) {
 					[
 						$elm$html$Html$text('Enter ingredients below of the form \'2 tbsp sugar\' or \'3 eggs\'')
 					])),
+				A2($author$project$Rationalizer$ingredForm, newIngred, ingredValid),
 				A2(
-				$elm$html$Html$ul,
-				_List_Nil,
-				A2($elm$core$List$map, $author$project$Rationalizer$ingredItem, ingredList)),
-				A2($author$project$Rationalizer$ingredForm, newIngred, ingredValid)
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('ingredListView'),
+						A2($elm$html$Html$Attributes$style, 'width', '100%')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$ul,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'display', 'block'),
+								A2($elm$html$Html$Attributes$style, 'margin-left', 'auto'),
+								A2($elm$html$Html$Attributes$style, 'margin-right', 'auto'),
+								A2($elm$html$Html$Attributes$style, 'width', '50%')
+							]),
+						A3(
+							$elm$core$List$foldr,
+							F2(
+								function (x, acc) {
+									return A2(
+										$elm$core$List$cons,
+										A2($author$project$Rationalizer$ingredItem, x, ingredList),
+										acc);
+								}),
+							_List_Nil,
+							ingredList))
+					]))
 			]));
 };
+var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $author$project$Rationalizer$setScaleView = function (_v0) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('setScaleView'),
+				A2($elm$html$Html$Attributes$style, 'display', 'inline')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Set scale for rationalization: ')
+					])),
+				A2(
+				$elm$html$Html$input,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$type_('radio'),
+						$elm$html$Html$Attributes$id('mult'),
+						$elm$html$Html$Attributes$name('scaleType'),
+						$elm$html$Html$Attributes$value('mult')
+					]),
+				_List_Nil),
+				A2(
+				$elm$html$Html$label,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$for('mult')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('*')
+					])),
+				A2(
+				$elm$html$Html$input,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$type_('radio'),
+						$elm$html$Html$Attributes$id('div'),
+						$elm$html$Html$Attributes$name('scaleType'),
+						$elm$html$Html$Attributes$value('div')
+					]),
+				_List_Nil),
+				A2(
+				$elm$html$Html$label,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'margin-left', '30px'),
+						$elm$html$Html$Attributes$for('div')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('/')
+					])),
+				A2(
+				$elm$html$Html$input,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'margin-left', '50px'),
+						A2($elm$html$Html$Attributes$style, 'margin-right', '50px'),
+						A2($elm$html$Html$Attributes$style, 'width', '100px')
+					]),
+				_List_Nil),
+				A2(
+				$elm$html$Html$button,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('RATIONALIZE!')
+					]))
+			]));
+};
+var $author$project$Rationalizer$mainView = function (state) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('container')
+			]),
+		_List_fromArray(
+			[
+				$author$project$Rationalizer$ingredView(state),
+				$author$project$Rationalizer$setScaleView(state)
+			]));
+};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Rationalizer$isValidIngred = function (raw) {
+	var lst = A2($elm$core$String$split, ' ', raw);
+	if ($elm$core$List$length(lst) < 2) {
+		return false;
+	} else {
+		var _v0 = $elm$core$List$head(lst);
+		if (_v0.$ === 'Nothing') {
+			return false;
+		} else {
+			var num = _v0.a;
+			var _v1 = $elm$core$String$toFloat(num);
+			if (_v1.$ === 'Nothing') {
+				return false;
+			} else {
+				return true;
+			}
+		}
+	}
+};
+var $elm$core$Elm$JsArray$push = _JsArray_push;
+var $elm$core$Elm$JsArray$singleton = _JsArray_singleton;
+var $elm$core$Array$insertTailInTree = F4(
+	function (shift, index, tail, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		if (_Utils_cmp(
+			pos,
+			$elm$core$Elm$JsArray$length(tree)) > -1) {
+			if (shift === 5) {
+				return A2(
+					$elm$core$Elm$JsArray$push,
+					$elm$core$Array$Leaf(tail),
+					tree);
+			} else {
+				var newSub = $elm$core$Array$SubTree(
+					A4($elm$core$Array$insertTailInTree, shift - $elm$core$Array$shiftStep, index, tail, $elm$core$Elm$JsArray$empty));
+				return A2($elm$core$Elm$JsArray$push, newSub, tree);
+			}
+		} else {
+			var value = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (value.$ === 'SubTree') {
+				var subTree = value.a;
+				var newSub = $elm$core$Array$SubTree(
+					A4($elm$core$Array$insertTailInTree, shift - $elm$core$Array$shiftStep, index, tail, subTree));
+				return A3($elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			} else {
+				var newSub = $elm$core$Array$SubTree(
+					A4(
+						$elm$core$Array$insertTailInTree,
+						shift - $elm$core$Array$shiftStep,
+						index,
+						tail,
+						$elm$core$Elm$JsArray$singleton(value)));
+				return A3($elm$core$Elm$JsArray$unsafeSet, pos, newSub, tree);
+			}
+		}
+	});
+var $elm$core$Array$unsafeReplaceTail = F2(
+	function (newTail, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var originalTailLen = $elm$core$Elm$JsArray$length(tail);
+		var newTailLen = $elm$core$Elm$JsArray$length(newTail);
+		var newArrayLen = len + (newTailLen - originalTailLen);
+		if (_Utils_eq(newTailLen, $elm$core$Array$branchFactor)) {
+			var overflow = _Utils_cmp(newArrayLen >>> $elm$core$Array$shiftStep, 1 << startShift) > 0;
+			if (overflow) {
+				var newShift = startShift + $elm$core$Array$shiftStep;
+				var newTree = A4(
+					$elm$core$Array$insertTailInTree,
+					newShift,
+					len,
+					newTail,
+					$elm$core$Elm$JsArray$singleton(
+						$elm$core$Array$SubTree(tree)));
+				return A4($elm$core$Array$Array_elm_builtin, newArrayLen, newShift, newTree, $elm$core$Elm$JsArray$empty);
+			} else {
+				return A4(
+					$elm$core$Array$Array_elm_builtin,
+					newArrayLen,
+					startShift,
+					A4($elm$core$Array$insertTailInTree, startShift, len, newTail, tree),
+					$elm$core$Elm$JsArray$empty);
+			}
+		} else {
+			return A4($elm$core$Array$Array_elm_builtin, newArrayLen, startShift, tree, newTail);
+		}
+	});
+var $elm$core$Array$appendHelpTree = F2(
+	function (toAppend, array) {
+		var len = array.a;
+		var tree = array.c;
+		var tail = array.d;
+		var itemsToAppend = $elm$core$Elm$JsArray$length(toAppend);
+		var notAppended = ($elm$core$Array$branchFactor - $elm$core$Elm$JsArray$length(tail)) - itemsToAppend;
+		var appended = A3($elm$core$Elm$JsArray$appendN, $elm$core$Array$branchFactor, tail, toAppend);
+		var newArray = A2($elm$core$Array$unsafeReplaceTail, appended, array);
+		if (notAppended < 0) {
+			var nextTail = A3($elm$core$Elm$JsArray$slice, notAppended, itemsToAppend, toAppend);
+			return A2($elm$core$Array$unsafeReplaceTail, nextTail, newArray);
+		} else {
+			return newArray;
+		}
+	});
+var $elm$core$Elm$JsArray$foldl = _JsArray_foldl;
+var $elm$core$Array$builderFromArray = function (_v0) {
+	var len = _v0.a;
+	var tree = _v0.c;
+	var tail = _v0.d;
+	var helper = F2(
+		function (node, acc) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return A3($elm$core$Elm$JsArray$foldl, helper, acc, subTree);
+			} else {
+				return A2($elm$core$List$cons, node, acc);
+			}
+		});
+	return {
+		nodeList: A3($elm$core$Elm$JsArray$foldl, helper, _List_Nil, tree),
+		nodeListSize: (len / $elm$core$Array$branchFactor) | 0,
+		tail: tail
+	};
+};
+var $elm$core$Array$append = F2(
+	function (a, _v0) {
+		var aTail = a.d;
+		var bLen = _v0.a;
+		var bTree = _v0.c;
+		var bTail = _v0.d;
+		if (_Utils_cmp(bLen, $elm$core$Array$branchFactor * 4) < 1) {
+			var foldHelper = F2(
+				function (node, array) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3($elm$core$Elm$JsArray$foldl, foldHelper, array, tree);
+					} else {
+						var leaf = node.a;
+						return A2($elm$core$Array$appendHelpTree, leaf, array);
+					}
+				});
+			return A2(
+				$elm$core$Array$appendHelpTree,
+				bTail,
+				A3($elm$core$Elm$JsArray$foldl, foldHelper, a, bTree));
+		} else {
+			var foldHelper = F2(
+				function (node, builder) {
+					if (node.$ === 'SubTree') {
+						var tree = node.a;
+						return A3($elm$core$Elm$JsArray$foldl, foldHelper, builder, tree);
+					} else {
+						var leaf = node.a;
+						return A2($elm$core$Array$appendHelpBuilder, leaf, builder);
+					}
+				});
+			return A2(
+				$elm$core$Array$builderToArray,
+				true,
+				A2(
+					$elm$core$Array$appendHelpBuilder,
+					bTail,
+					A3(
+						$elm$core$Elm$JsArray$foldl,
+						foldHelper,
+						$elm$core$Array$builderFromArray(a),
+						bTree)));
+		}
+	});
+var $elm$core$Array$push = F2(
+	function (a, array) {
+		var tail = array.d;
+		return A2(
+			$elm$core$Array$unsafeReplaceTail,
+			A2($elm$core$Elm$JsArray$push, a, tail),
+			array);
+	});
+var $author$project$Rationalizer$moveIngredDown = F2(
+	function (ingredToMove, lst) {
+		var idx = A3($author$project$Rationalizer$findIngredIndex, ingredToMove, lst, 0);
+		var arr = $elm$core$Array$fromList(lst);
+		return $elm$core$Array$toList(
+			A2(
+				$elm$core$Array$append,
+				A2(
+					$elm$core$Array$push,
+					ingredToMove,
+					A2(
+						$elm$core$Array$append,
+						A3($elm$core$Array$slice, 0, idx, arr),
+						A3($elm$core$Array$slice, idx + 1, idx + 2, arr))),
+				A3(
+					$elm$core$Array$slice,
+					idx + 2,
+					$elm$core$Array$length(arr),
+					arr)));
+	});
+var $author$project$Rationalizer$moveIngredUp = F2(
+	function (ingredToMove, lst) {
+		var idx = A3($author$project$Rationalizer$findIngredIndex, ingredToMove, lst, 0);
+		var arr = $elm$core$Array$fromList(lst);
+		return $elm$core$Array$toList(
+			A2(
+				$elm$core$Array$append,
+				A2(
+					$elm$core$Array$append,
+					A2(
+						$elm$core$Array$push,
+						ingredToMove,
+						A3($elm$core$Array$slice, 0, idx - 1, arr)),
+					A3($elm$core$Array$slice, idx - 1, idx, arr)),
+				A3(
+					$elm$core$Array$slice,
+					idx + 1,
+					$elm$core$Array$length(arr),
+					arr)));
+	});
+var $author$project$Rationalizer$webUpdate = F2(
+	function (msg, _v0) {
+		var ingredList = _v0.a.ingredList;
+		var newIngred = _v0.a.newIngred;
+		var ingredValid = _v0.a.ingredValid;
+		switch (msg.$) {
+			case 'AddedIngred':
+				var newIngred_ = msg.a;
+				var st = $author$project$Rationalizer$WebState(
+					{
+						ingredList: A2($elm$core$List$cons, newIngred_, ingredList),
+						ingredValid: false,
+						newIngred: ''
+					});
+				return _Utils_Tuple2(st, $elm$core$Platform$Cmd$none);
+			case 'FinishedIngred':
+				var doneIngred = msg.a;
+				var st = $author$project$Rationalizer$WebState(
+					{
+						ingredList: A2(
+							$elm$core$List$filter,
+							$author$project$Rationalizer$ingredsNotEqual(doneIngred),
+							ingredList),
+						ingredValid: ingredValid,
+						newIngred: newIngred
+					});
+				return _Utils_Tuple2(st, $elm$core$Platform$Cmd$none);
+			case 'UpdatedNewIngred':
+				var raw = msg.a;
+				return _Utils_Tuple2(
+					$author$project$Rationalizer$WebState(
+						{
+							ingredList: ingredList,
+							ingredValid: $author$project$Rationalizer$isValidIngred(raw),
+							newIngred: raw
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MoveUpIngred':
+				var ingredToMove = msg.a;
+				return _Utils_Tuple2(
+					$author$project$Rationalizer$WebState(
+						{
+							ingredList: A2($author$project$Rationalizer$moveIngredUp, ingredToMove, ingredList),
+							ingredValid: ingredValid,
+							newIngred: newIngred
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var ingredToMove = msg.a;
+				return _Utils_Tuple2(
+					$author$project$Rationalizer$WebState(
+						{
+							ingredList: A2($author$project$Rationalizer$moveIngredDown, ingredToMove, ingredList),
+							ingredValid: ingredValid,
+							newIngred: newIngred
+						}),
+					$elm$core$Platform$Cmd$none);
+		}
+	});
 var $author$project$Rationalizer$main = $elm$browser$Browser$element(
-	{init: $author$project$Rationalizer$ingredInit, subscriptions: $author$project$Rationalizer$ingredSubscriptions, update: $author$project$Rationalizer$ingredUpdate, view: $author$project$Rationalizer$ingredView});
+	{init: $author$project$Rationalizer$ingredInit, subscriptions: $author$project$Rationalizer$ingredSubscriptions, update: $author$project$Rationalizer$webUpdate, view: $author$project$Rationalizer$mainView});
 _Platform_export({'Rationalizer':{'init':$author$project$Rationalizer$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
